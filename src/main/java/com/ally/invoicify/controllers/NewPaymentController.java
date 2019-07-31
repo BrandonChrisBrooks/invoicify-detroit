@@ -9,10 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.http.*;
 
 import com.ally.invoicify.exceptions.UnknownException;
 
@@ -59,9 +59,17 @@ public class NewPaymentController {
 	}
 
 	return newPaymentRepo.save(newPayment);
-	
-
 		
+	}
+
+	@DeleteMapping("{id}")
+	public NewPayment delete(@PathVariable long id){
+		NewPayment original = newPaymentRepo.findOne(id);
+		Invoice invoice = invoiceRepo.findOne(original.getInvoiceId());
+		invoice.setCurrentBalance(invoice.getCurrentBalance() + original.getAmount());
+		invoiceRepo.save(invoice);
+		newPaymentRepo.delete(original);
+		return original;
 	}
 
 }
